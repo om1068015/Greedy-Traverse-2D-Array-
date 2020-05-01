@@ -1,0 +1,119 @@
+/*
+ * Omar Martinez
+ * Mimi Rasky
+ * Math 230-603
+ * Due Date: 04-17-2020
+ * Project 7: MIPS Decoder
+ * 
+ * This program implements bit manipulation through "AND" and "SHIFT" operators.
+ * Reads hexi-decimal number from file then decodes the the input into the correct MIPS instruction.
+ * Writes correct output to file and to console.
+ * 
+ */
+
+#include <stdio.h>
+#include <stdlib.h>
+int main(){
+    FILE *dfile;//file pointer
+    unsigned int num[20]={0}, sum = 0;
+    int a=0;
+    //opening file with read instruction
+    if((dfile = fopen("data.txt","r")) == NULL)
+    {
+        printf("not open.");
+        return 0;
+    }
+    //reading input from test file
+    while(!feof(dfile))
+    {
+        fscanf(dfile,"%x",&num[a]);
+        a++;
+    }
+    //opening file to output information
+    if((dfile = fopen("OmarMartinezOutput.txt","w")) == NULL)
+    {
+        printf("not open.");
+        return 0;
+    }
+    //print to file and console
+    fprintf(dfile,"Machine code \topcode\t func\tInst\t Format\t rs\t rt \t rd \tshamt \tImm\n");
+    printf("Machine code \topcode\t func\tInst\t Format\t rs\t rt \t rd \tshamt \tImm\n");
+    for(int i  = 0; i < a; i++)
+    {
+        sum += num[i] >> 26;//manipulating bits to get opcode
+        //print hex number to file and console
+        fprintf(dfile,"   0x%08x\t",num[i]);
+        printf("   0x%08x\t",num[i]);
+        //checking for R or I instruction
+        if(num[i] >> 26)//if the opcode is not zero
+        {
+            //print opcode and dash to file and console
+            fprintf(dfile,"0x%02x\t  -\t",num[i] >> 26);
+            printf("0x%02x\t  -\t",num[i] >> 26);
+            //checking for MIPS instruction then printing to console and file
+            if((num[i] >> 26) == 8)
+            {
+                fprintf(dfile,"addi");
+                printf("addi");
+            }
+            else if((num[i] >> 26) == 9)
+            {
+                fprintf(dfile,"addiu");
+                printf("addiu");
+            }
+            else if((num[i] >> 26) == 15)
+            {
+                fprintf(dfile,"lui");
+                printf("lui");
+            }
+            else if((num[i] >> 26) == 13)
+            {
+                fprintf(dfile,"ori");
+                printf("ori");
+            }
+            else
+            {
+                fprintf(dfile,"beq");
+                printf("beq");
+            }
+            //using "AND" and "SHIFT" operators to print format, registers, and imm to file and console
+            fprintf(dfile,"\t     I \t %2u \t %u \t  -\t  -\t%04x\n",(num[i] & 65011712) >> 21,(num[i] & 2031616) >> 16,num[i] & 65535);
+            printf("\t     I \t %2u \t %2u \t  -\t  -\t%04x\n",(num[i] & 65011712) >> 21,(num[i] & 2031616) >> 16,num[i] & 65535);
+        }
+        else
+        {
+            //using "AND" and "SHIFT" operators to print opcode and function to file and console
+            fprintf(dfile,"0x%02x \t 0x%02x \t",num[i] >> 26, num[i] & 63);
+            printf("0x%02x \t 0x%02x \t",num[i] >> 26, num[i] & 63);
+            //looking for correct instruction to print to file and console
+            if((num[i] & 63) == 36)
+            {
+                fprintf(dfile,"and");
+                printf("and");
+            }
+            else if((num[i] & 63) == 32)
+            {
+                fprintf(dfile,"add");
+                printf("add");
+            }
+            else if((num[i] & 63) == 42)
+            {
+                fprintf(dfile,"slt");
+                printf("slt");
+            }
+            else
+            {
+                fprintf(dfile,"srl");
+                printf("srl");
+            }
+            //using "AND" and "SHIFT" operators to print format, registers and shamt to file and console
+            fprintf(dfile,"\t     R \t %2u \t %2u \t %2u \t %2u \t - \n",(num[i] & 65011712) >> 21,(num[i] & 2031616) >>16 ,(num[i] & 63488) >> 11,(num[i] & 992) >> 6);
+            printf("\t     R \t %2u \t %2u \t %2u \t %2u \t - \n",(num[i] & 65011712) >> 21,(num[i] & 2031616) >>16 ,(num[i] & 63488) >> 11,(num[i] & 992) >> 6);
+        }
+    }
+    //printing opcode sum to file and console
+    fprintf(dfile,"Opcode sum: %u", sum);
+    printf("Opcode sum: %u", sum);
+    fclose(dfile);
+    return 0;
+}
